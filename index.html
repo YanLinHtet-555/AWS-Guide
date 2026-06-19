@@ -213,7 +213,7 @@ body.force-mobile .toc-label{display:none !important}
   <div class="brand"><svg class="hexmark" viewBox="0 0 100 100" fill="none"><polygon points="50,5 90,28 90,72 50,95 10,72 10,28" stroke="#00e5ff" stroke-width="5"/><polygon points="50,26 71,38 71,62 50,74 29,62 29,38" fill="#00e5ff" opacity="0.85"/></svg> <span>AIF</span><b>·C01</b></div>
   <div class="view-toggle">
     <span class="vt-lbl" id="lblDesktop">DESKTOP</span>
-    <button class="toggle-btn" id="viewSwitch" aria-pressed="false" title="Switch to mobile view"></button>
+    <button type="button" class="toggle-btn" id="viewSwitch" aria-pressed="false" title="Switch to mobile view"></button>
     <span class="vt-lbl" id="lblMobile">MOBILE</span>
   </div>
   <div class="topcode"><span class="dot"></span>NEURAL STUDY CONSOLE</div>
@@ -1748,13 +1748,53 @@ document.querySelector('.totop').addEventListener('click',()=>scrollTo({top:0,be
   const btn=document.getElementById('viewSwitch');
   const lblD=document.getElementById('lblDesktop');
   const lblM=document.getElementById('lblMobile');
+  let isMobile=false;
+  const P='important';
+
+  function applyView(mobile){
+    const shell=document.querySelector('.shell');
+    const side=document.querySelector('.side');
+    const toc=document.getElementById('toc');
+    const tocLabel=document.querySelector('.toc-label');
+    if(mobile){
+      shell.style.setProperty('grid-template-columns','1fr',P);
+      shell.style.setProperty('gap','0',P);
+      side.style.setProperty('position','static',P);
+      side.style.setProperty('height','auto',P);
+      side.style.marginBottom='18px';
+      toc.style.setProperty('display','flex',P);
+      toc.style.setProperty('flex-wrap','wrap',P);
+      toc.style.setProperty('gap','6px',P);
+      toc.style.setProperty('overflow','visible',P);
+      if(tocLabel)tocLabel.style.setProperty('display','none',P);
+      toc.querySelectorAll('a').forEach(a=>{
+        a.style.setProperty('border-left','none',P);
+        a.style.setProperty('border','1px solid rgba(0,229,255,.16)',P);
+        a.style.setProperty('border-radius','20px',P);
+        a.style.setProperty('padding','6px 12px',P);
+      });
+      toc.querySelectorAll('a .ix').forEach(ix=>ix.style.setProperty('display','none',P));
+    } else {
+      ['grid-template-columns','gap'].forEach(p=>shell.style.removeProperty(p));
+      ['position','height'].forEach(p=>side.style.removeProperty(p));
+      side.style.marginBottom='';
+      ['display','flex-wrap','gap','overflow'].forEach(p=>toc.style.removeProperty(p));
+      if(tocLabel)tocLabel.style.removeProperty('display');
+      toc.querySelectorAll('a').forEach(a=>{
+        ['border-left','border','border-radius','padding'].forEach(p=>a.style.removeProperty(p));
+      });
+      toc.querySelectorAll('a .ix').forEach(ix=>ix.style.removeProperty('display'));
+    }
+  }
+
   btn.addEventListener('click',()=>{
-    const mobile=btn.classList.toggle('mobile');
-    document.body.classList.toggle('force-mobile',mobile);
-    btn.setAttribute('aria-pressed',mobile);
-    btn.title=mobile?'Switch to desktop view':'Switch to mobile view';
-    lblD.style.color=mobile?'var(--muted-dim)':'var(--cyan)';
-    lblM.style.color=mobile?'var(--violet)':'var(--muted-dim)';
+    isMobile=!isMobile;
+    btn.classList.toggle('mobile',isMobile);
+    btn.setAttribute('aria-pressed',isMobile);
+    btn.title=isMobile?'Switch to desktop view':'Switch to mobile view';
+    lblD.style.color=isMobile?'var(--muted-dim)':'var(--cyan)';
+    lblM.style.color=isMobile?'var(--violet)':'var(--muted-dim)';
+    applyView(isMobile);
   });
 })();
 </script>
