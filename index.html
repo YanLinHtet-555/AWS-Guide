@@ -43,8 +43,27 @@ body{
 .brand{display:flex; align-items:center; gap:11px; font-family:"Chakra Petch",sans-serif; font-weight:700; letter-spacing:.5px;}
 .hexmark{width:26px; height:26px; flex:0 0 auto; filter:drop-shadow(0 0 6px var(--cyan));}
 .brand b{color:#fff} .brand span{color:var(--cyan)}
-.topcode{margin-left:auto; font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--muted);
+.topcode{font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--muted);
   border:1px solid var(--border); padding:5px 10px; border-radius:8px; background:rgba(0,229,255,.04);}
+/* view toggle */
+.view-toggle{display:flex;align-items:center;gap:9px;margin-left:auto;margin-right:14px;}
+.vt-lbl{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1.5px;transition:.25s;cursor:pointer;}
+#lblDesktop{color:var(--cyan);}
+#lblMobile{color:var(--muted-dim);}
+.toggle-btn{position:relative;width:46px;height:24px;border-radius:12px;border:1px solid var(--border-strong);
+  background:rgba(0,229,255,.1);cursor:pointer;padding:0;transition:.3s;flex-shrink:0;}
+.toggle-btn::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;
+  background:var(--cyan);box-shadow:0 0 8px var(--cyan);transition:.3s;}
+.toggle-btn.mobile{background:rgba(177,78,255,.15);border-color:rgba(177,78,255,.42);}
+.toggle-btn.mobile::after{left:calc(100% - 19px);background:var(--violet);box-shadow:0 0 8px var(--violet);}
+/* forced mobile layout */
+body.force-mobile .shell{grid-template-columns:1fr !important;gap:0 !important}
+body.force-mobile .side{position:static !important;height:auto !important;margin-bottom:18px}
+body.force-mobile .toc{max-height:none !important;display:flex !important;flex-wrap:wrap;gap:6px}
+body.force-mobile .toc a{border-left:none !important;border:1px solid var(--border) !important;border-radius:20px !important;padding:6px 12px !important}
+body.force-mobile .toc a.active{border-color:var(--cyan) !important}
+body.force-mobile .toc a .ix{display:none !important}
+body.force-mobile .toc-label{display:none !important}
 .topcode .dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--good);
   box-shadow:0 0 8px var(--good); margin-right:7px; animation:pulse 1.8s infinite;}
 /* ---------- hero ---------- */
@@ -192,6 +211,11 @@ body{
 
 <header class="topbar">
   <div class="brand"><svg class="hexmark" viewBox="0 0 100 100" fill="none"><polygon points="50,5 90,28 90,72 50,95 10,72 10,28" stroke="#00e5ff" stroke-width="5"/><polygon points="50,26 71,38 71,62 50,74 29,62 29,38" fill="#00e5ff" opacity="0.85"/></svg> <span>AIF</span><b>·C01</b></div>
+  <div class="view-toggle">
+    <span class="vt-lbl" id="lblDesktop">DESKTOP</span>
+    <button class="toggle-btn" id="viewSwitch" aria-pressed="false" title="Switch to mobile view"></button>
+    <span class="vt-lbl" id="lblMobile">MOBILE</span>
+  </div>
   <div class="topcode"><span class="dot"></span>NEURAL STUDY CONSOLE</div>
 </header>
 
@@ -1718,6 +1742,21 @@ addEventListener('scroll',()=>{
 
 // back to top
 document.querySelector('.totop').addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
+
+// view toggle
+(function(){
+  const btn=document.getElementById('viewSwitch');
+  const lblD=document.getElementById('lblDesktop');
+  const lblM=document.getElementById('lblMobile');
+  btn.addEventListener('click',()=>{
+    const mobile=btn.classList.toggle('mobile');
+    document.body.classList.toggle('force-mobile',mobile);
+    btn.setAttribute('aria-pressed',mobile);
+    btn.title=mobile?'Switch to desktop view':'Switch to mobile view';
+    lblD.style.color=mobile?'var(--muted-dim)':'var(--cyan)';
+    lblM.style.color=mobile?'var(--violet)':'var(--muted-dim)';
+  });
+})();
 </script>
 </body>
 </html>
