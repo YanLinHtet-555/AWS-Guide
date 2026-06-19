@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AWS AI Practitioner (AIF-C01) — Neural Study Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060912; --bg2:#0a0f1f; --panel:rgba(15,22,42,.62); --panel-solid:#0d1426;
+  --border:rgba(0,229,255,.16); --border-strong:rgba(0,229,255,.42);
+  --cyan:#00e5ff; --cyan-soft:#5ef0ff; --amber:#ff9d2e; --violet:#b14eff;
+  --good:#2ce6a4; --text:#e7eefb; --muted:#8696b6; --muted-dim:#5e6f90;
+  --r:14px; --glow:0 0 0 1px rgba(0,229,255,.12), 0 0 30px -8px rgba(0,229,255,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"Inter",system-ui,sans-serif; font-size:15px; line-height:1.62;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+/* ---------- ambient background ---------- */
+.bg-fixed{position:fixed; inset:0; z-index:-3; background:
+  radial-gradient(1100px 600px at 80% -10%, rgba(124,58,237,.20), transparent 60%),
+  radial-gradient(900px 600px at 0% 10%, rgba(0,229,255,.14), transparent 55%),
+  radial-gradient(800px 700px at 60% 110%, rgba(255,157,46,.10), transparent 60%),
+  linear-gradient(180deg,#060912,#080d1b 60%,#060912);}
+.bg-grid{position:fixed; inset:0; z-index:-2; opacity:.35;
+  background-image:linear-gradient(rgba(0,229,255,.06) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(0,229,255,.06) 1px,transparent 1px);
+  background-size:46px 46px; mask-image:radial-gradient(circle at 50% 30%,#000 30%,transparent 85%);}
+#net{position:fixed; inset:0; z-index:-1;}
+/* ---------- top bar + progress ---------- */
+.progress{position:fixed; top:0; left:0; height:2px; width:0%;
+  background:linear-gradient(90deg,var(--cyan),var(--violet)); z-index:60;
+  box-shadow:0 0 12px var(--cyan);}
+.topbar{position:fixed; top:0; left:0; right:0; z-index:50; display:flex; align-items:center;
+  gap:14px; padding:12px 22px; backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(6,9,18,.86),rgba(6,9,18,.35)); border-bottom:1px solid var(--border);}
+.brand{display:flex; align-items:center; gap:11px; font-family:"Chakra Petch",sans-serif; font-weight:700; letter-spacing:.5px;}
+.hexmark{width:26px; height:26px; flex:0 0 auto; filter:drop-shadow(0 0 6px var(--cyan));}
+.brand b{color:#fff} .brand span{color:var(--cyan)}
+.topcode{margin-left:auto; font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--muted);
+  border:1px solid var(--border); padding:5px 10px; border-radius:8px; background:rgba(0,229,255,.04);}
+.topcode .dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--good);
+  box-shadow:0 0 8px var(--good); margin-right:7px; animation:pulse 1.8s infinite;}
+/* ---------- hero ---------- */
+.hero{min-height:88vh; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center; padding:130px 22px 60px; position:relative;}
+.eyebrow{font-family:"JetBrains Mono",monospace; font-size:12px; letter-spacing:4px; text-transform:uppercase;
+  color:var(--cyan); margin-bottom:22px; opacity:0; animation:fadeup .8s .1s forwards;}
+.eyebrow::before{content:"// "; color:var(--violet)}
+.hero h1{font-family:"Chakra Petch",sans-serif; font-weight:700; font-size:clamp(40px,8vw,92px);
+  line-height:.98; margin:0; letter-spacing:1px; opacity:0; animation:fadeup .9s .2s forwards;
+  background:linear-gradient(180deg,#fff 30%,#bfe9ff 60%,#7ad7ff); -webkit-background-clip:text;
+  background-clip:text; -webkit-text-fill-color:transparent;
+  text-shadow:0 0 60px rgba(0,229,255,.25);}
+.hero h1 .amber{background:linear-gradient(180deg,#ffd9a0,var(--amber)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+.hero .sub{max-width:640px; color:var(--muted); margin:24px auto 0; font-size:16px;
+  opacity:0; animation:fadeup 1s .35s forwards;}
+.chips{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:38px;
+  opacity:0; animation:fadeup 1s .5s forwards;}
+.chip{font-family:"JetBrains Mono",monospace; font-size:13px; padding:11px 16px; border-radius:11px;
+  border:1px solid var(--border); background:var(--panel); backdrop-filter:blur(8px); color:#fff;
+  box-shadow:var(--glow); transition:.3s;}
+.chip b{color:var(--cyan); font-size:18px; display:block; line-height:1.1}
+.chip span{color:var(--muted); font-size:10px; letter-spacing:1.5px; text-transform:uppercase}
+.chip:hover{transform:translateY(-3px); border-color:var(--border-strong)}
+.scrollhint{margin-top:48px; font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:2px;
+  color:var(--muted-dim); opacity:0; animation:fadeup 1s .7s forwards;}
+.scrollhint .arrow{display:block; margin:10px auto 0; width:18px; height:18px; border-right:2px solid var(--cyan);
+  border-bottom:2px solid var(--cyan); transform:rotate(45deg); animation:bob 1.8s infinite;}
+/* ---------- shell layout ---------- */
+.shell{display:grid; grid-template-columns:262px minmax(0,1fr); gap:34px; max-width:1180px;
+  margin:0 auto; padding:30px 22px 120px;}
+/* sidebar */
+.side{position:sticky; top:78px; align-self:start; height:calc(100vh - 100px); display:flex; flex-direction:column;}
+.search{position:relative; margin-bottom:16px;}
+.search input{width:100%; padding:11px 14px 11px 38px; border-radius:11px; border:1px solid var(--border);
+  background:var(--panel-solid); color:var(--text); font-family:"JetBrains Mono",monospace; font-size:13px; outline:none; transition:.25s;}
+.search input:focus{border-color:var(--border-strong); box-shadow:var(--glow)}
+.search input::placeholder{color:var(--muted-dim)}
+.search svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; height:16px; stroke:var(--cyan); opacity:.8}
+.toc-label{font-family:"JetBrains Mono",monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--muted-dim); margin:4px 0 10px 4px;}
+.toc{overflow-y:auto; padding-right:6px; flex:1;}
+.toc a{display:flex; align-items:center; gap:9px; padding:7px 11px; border-radius:9px; color:var(--muted);
+  text-decoration:none; font-size:13px; line-height:1.3; transition:.2s; border-left:2px solid transparent;}
+.toc a .ix{font-family:"JetBrains Mono",monospace; font-size:10px; color:var(--muted-dim); min-width:20px;}
+.toc a:hover{color:var(--text); background:rgba(0,229,255,.05)}
+.toc a.active{color:#fff; background:linear-gradient(90deg,rgba(0,229,255,.12),transparent);
+  border-left:2px solid var(--cyan);}
+.toc a.active .ix{color:var(--cyan)}
+/* ---------- content sections ---------- */
+.main{min-width:0}
+.sec{border:1px solid var(--border); border-radius:var(--r); background:var(--panel); backdrop-filter:blur(10px);
+  margin-bottom:20px; overflow:hidden; opacity:0; transform:translateY(22px); transition:opacity .7s, transform .7s;
+  scroll-margin-top:84px;}
+.sec.in{opacity:1; transform:none}
+.sec-head{display:flex; align-items:center; gap:14px; padding:18px 22px; cursor:pointer; position:relative;
+  background:linear-gradient(90deg,rgba(0,229,255,.05),transparent);}
+.sec-head::before{content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:3px;
+  background:linear-gradient(180deg,var(--cyan),var(--violet)); box-shadow:0 0 14px var(--cyan);}
+.sec-head h2{margin:0; font-family:"Chakra Petch",sans-serif; font-weight:600; font-size:19px; letter-spacing:.3px; color:#fff; flex:1;}
+.sec-ix{font-family:"JetBrains Mono",monospace; font-size:12px; color:var(--cyan); opacity:.85}
+.chev{width:20px; height:20px; flex:0 0 auto; transition:transform .35s; stroke:var(--cyan)}
+.sec.collapsed .chev{transform:rotate(-90deg)}
+.sec-body{padding:6px 24px 24px; transition:max-height .4s ease, opacity .3s; overflow:hidden;}
+.sec.collapsed .sec-body{max-height:0 !important; opacity:0; padding-top:0; padding-bottom:0}
+/* typography inside content */
+.sec-body h3{font-family:"Chakra Petch",sans-serif; font-weight:600; font-size:15px; letter-spacing:.3px;
+  color:var(--cyan-soft); margin:24px 0 10px; padding-left:13px; border-left:2px solid var(--amber);}
+.sec-body p{margin:10px 0; color:#cdd8ee}
+.sec-body strong{color:#fff; font-weight:600}
+.sec-body em{color:var(--cyan-soft); font-style:normal}
+.sec-body code{font-family:"JetBrains Mono",monospace; font-size:.86em; color:var(--cyan);
+  background:rgba(0,229,255,.08); border:1px solid var(--border); padding:1px 6px; border-radius:6px;}
+.sec-body ul{list-style:none; padding-left:6px; margin:10px 0}
+.sec-body li{position:relative; padding-left:20px; margin:7px 0; color:#cdd8ee}
+.sec-body li::before{content:""; position:absolute; left:3px; top:.62em; width:6px; height:6px; border-radius:50%;
+  background:var(--cyan); box-shadow:0 0 8px var(--cyan);}
+.sec-body hr{display:none}
+/* tables as data readouts */
+.tablewrap{overflow-x:auto; margin:16px 0; border:1px solid var(--border); border-radius:12px;
+  background:rgba(8,13,27,.55);}
+.sec-body table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:520px;}
+.sec-body th{background:linear-gradient(180deg,rgba(0,229,255,.14),rgba(0,229,255,.04));
+  color:var(--cyan-soft); text-align:left; padding:11px 14px; font-family:"JetBrains Mono",monospace;
+  font-size:11px; letter-spacing:1px; text-transform:uppercase; border-bottom:1px solid var(--border-strong); white-space:nowrap;}
+.sec-body td{padding:10px 14px; border-bottom:1px solid rgba(0,229,255,.07); vertical-align:top; color:#cfdaef}
+.sec-body tr:last-child td{border-bottom:none}
+.sec-body tbody tr{transition:.18s}
+.sec-body tbody tr:hover{background:rgba(0,229,255,.06)}
+.sec-body td strong{color:var(--amber)}
+/* tip / callout blockquotes */
+.sec-body blockquote{position:relative; margin:16px 0; padding:14px 18px 14px 20px; border-radius:12px;
+  background:linear-gradient(90deg,rgba(255,157,46,.10),rgba(255,157,46,.02));
+  border:1px solid rgba(255,157,46,.28); border-left:3px solid var(--amber);}
+.sec-body blockquote::before{content:"▸ INTEL"; position:absolute; top:-10px; left:14px; font-family:"JetBrains Mono",monospace;
+  font-size:9px; letter-spacing:2px; color:#0a0f1f; background:var(--amber); padding:2px 8px; border-radius:5px; font-weight:700;}
+.sec-body blockquote p{color:#f0d9b8; margin:4px 0; font-size:13.5px}
+.sec-body blockquote strong{color:#ffd9a0}
+.sec-body blockquote code{color:var(--amber); background:rgba(255,157,46,.12); border-color:rgba(255,157,46,.3)}
+/* no-results */
+.noresults{display:none; text-align:center; color:var(--muted); font-family:"JetBrains Mono",monospace;
+  padding:50px 0; font-size:13px;}
+.noresults.show{display:block}
+.hidden{display:none !important}
+/* back to top */
+.totop{position:fixed; bottom:26px; right:26px; width:46px; height:46px; border-radius:50%; z-index:40;
+  display:grid; place-items:center; cursor:pointer; border:1px solid var(--border-strong);
+  background:var(--panel-solid); box-shadow:var(--glow); opacity:0; pointer-events:none; transition:.3s;}
+.totop.show{opacity:1; pointer-events:auto}
+.totop:hover{transform:translateY(-3px)}
+.totop svg{width:20px; height:20px; stroke:var(--cyan)}
+/* footer */
+.foot{text-align:center; padding:40px 20px 80px; color:var(--muted-dim); font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:1px;}
+.foot span{color:var(--cyan)}
+/* scrollbar */
+::-webkit-scrollbar{width:10px; height:10px}
+::-webkit-scrollbar-track{background:#070b14}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--cyan),var(--violet)); border-radius:8px; border:2px solid #070b14}
+/* keyframes */
+@keyframes fadeup{from{opacity:0; transform:translateY(26px)} to{opacity:1; transform:none}}
+@keyframes pulse{0%,100%{opacity:1} 50%{opacity:.35}}
+@keyframes bob{0%,100%{transform:rotate(45deg) translate(0,0)} 50%{transform:rotate(45deg) translate(4px,4px)}}
+/* responsive */
+@media(max-width:880px){
+  .shell{grid-template-columns:1fr; gap:0}
+  .side{position:static; height:auto; margin-bottom:18px}
+  .toc{max-height:none; display:flex; flex-wrap:wrap; gap:6px}
+  .toc a{border-left:none; border:1px solid var(--border); border-radius:20px; padding:6px 12px}
+  .toc a.active{border-color:var(--cyan)}
+  .toc a .ix{display:none}
+  .toc-label{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
+  .sec{opacity:1; transform:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<div class="progress"></div>
+<div class="bg-fixed"></div>
+<div class="bg-grid"></div>
+<canvas id="net"></canvas>
+
+<header class="topbar">
+  <div class="brand"><svg class="hexmark" viewBox="0 0 100 100" fill="none"><polygon points="50,5 90,28 90,72 50,95 10,72 10,28" stroke="#00e5ff" stroke-width="5"/><polygon points="50,26 71,38 71,62 50,74 29,62 29,38" fill="#00e5ff" opacity="0.85"/></svg> <span>AIF</span><b>·C01</b></div>
+  <div class="topcode"><span class="dot"></span>NEURAL STUDY CONSOLE</div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">Neural Certification Protocol &nbsp;//&nbsp; AWS</div>
+  <h1>AWS <span class="amber">AI</span><br>PRACTITIONER</h1>
+  <p class="sub">A complete, interactive study console for the AIF-C01 exam — service maps, a keyword decoder, all five domains, security, and a full glossary. Search it, scan it, master it.</p>
+  <div class="chips">
+    <div class="chip"><b>65</b><span>Questions</span></div>
+    <div class="chip"><b>90</b><span>Minutes</span></div>
+    <div class="chip"><b>700</b><span>To Pass /1000</span></div>
+    <div class="chip"><b>5</b><span>Domains</span></div>
+  </div>
+  <div class="scrollhint">SCROLL TO INITIALIZE<span class="arrow"></span></div>
+</section>
+
+<div class="shell">
+  <aside class="side">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="q" type="text" placeholder="search service / keyword…" autocomplete="off">
+    </div>
+    <div class="toc-label">// Index</div>
+    <nav class="toc" id="toc"></nav>
+  </aside>
+  <main class="main">
+    <div id="content"><h2>📊 Exam Overview</h2>
+<blockquote>
+<p><strong>Exam facts:</strong> 65 questions · 90 minutes · pass = 700/1000 · foundational level · no coding.
+<strong>It rewards breadth, not depth.</strong> You don't tune models — you pick the <em>right service</em> for a use case and apply it <em>responsibly</em>. Most failures come from <strong>service-mapping</strong> questions and <strong>responsible-AI nuance</strong>.</p>
+</blockquote>
+<p><strong>Domain weights (study time priority):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Topic</th>
+<th>Weight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Fundamentals of AI &amp; ML</td>
+<td>20%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Fundamentals of Generative AI</td>
+<td>24%</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Applications of Foundation Models</strong></td>
+<td><strong>28%</strong> ← biggest</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Guidelines for Responsible AI</td>
+<td>14%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Security, Compliance &amp; Governance</td>
+<td>14%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>⭐ THE #1 EXAM SKILL: "Which service when?"</h2>
+<p>Most questions are <em>"A company wants to ___ — which AWS service?"</em> Memorize these mappings cold.</p>
+<table>
+<thead>
+<tr>
+<th>If the use case is…</th>
+<th>The answer is…</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Detect objects/faces/text <strong>in images or video</strong></td>
+<td><strong>Rekognition</strong></td>
+</tr>
+<tr>
+<td>Extract text/tables/forms <strong>from documents (scanned PDFs, invoices)</strong></td>
+<td><strong>Textract</strong></td>
+</tr>
+<tr>
+<td>Sentiment, entities, key phrases, language, <strong>PII in text</strong></td>
+<td><strong>Comprehend</strong></td>
+</tr>
+<tr>
+<td><strong>Speech → text</strong> (transcription, call center)</td>
+<td><strong>Transcribe</strong></td>
+</tr>
+<tr>
+<td><strong>Text → speech</strong> (lifelike voice)</td>
+<td><strong>Polly</strong></td>
+</tr>
+<tr>
+<td><strong>Translate</strong> between languages</td>
+<td><strong>Translate</strong></td>
+</tr>
+<tr>
+<td>Build a <strong>chatbot / voice bot</strong> (intents, slots)</td>
+<td><strong>Lex</strong></td>
+</tr>
+<tr>
+<td><strong>Enterprise search</strong> over internal docs (natural language)</td>
+<td><strong>Kendra</strong></td>
+</tr>
+<tr>
+<td><strong>Product/content recommendations</strong></td>
+<td><strong>Personalize</strong></td>
+</tr>
+<tr>
+<td><strong>Time-series forecasting</strong> (demand, sales)</td>
+<td><strong>Forecast</strong></td>
+</tr>
+<tr>
+<td><strong>Fraud detection</strong> (online transactions, fake accounts)</td>
+<td><strong>Fraud Detector</strong></td>
+</tr>
+<tr>
+<td><strong>Human review</strong> of low-confidence ML predictions</td>
+<td><strong>Augmented AI (A2I)</strong></td>
+</tr>
+<tr>
+<td>Access <strong>foundation models / GenAI</strong> via API (Claude, Llama, Titan/Nova)</td>
+<td><strong>Bedrock</strong></td>
+</tr>
+<tr>
+<td><strong>Build/train/deploy your own custom ML model</strong></td>
+<td><strong>SageMaker</strong></td>
+</tr>
+<tr>
+<td><strong>No-code ML</strong> for business analysts</td>
+<td><strong>SageMaker Canvas</strong></td>
+</tr>
+<tr>
+<td><strong>Label training data</strong></td>
+<td><strong>SageMaker Ground Truth</strong></td>
+</tr>
+<tr>
+<td>Detect <strong>bias / explain</strong> model predictions</td>
+<td><strong>SageMaker Clarify</strong></td>
+</tr>
+<tr>
+<td><strong>Generative AI assistant for employees</strong> (chat over company data)</td>
+<td><strong>Amazon Q Business</strong></td>
+</tr>
+<tr>
+<td><strong>AI coding assistant</strong></td>
+<td><strong>Amazon Q Developer</strong></td>
+</tr>
+<tr>
+<td>Industrial <strong>equipment anomaly</strong> detection</td>
+<td><strong>Lookout for Equipment / Monitron</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> If a question mentions a <em>pre-built, ready-to-use API with no training</em>, it's an <strong>AI service</strong> (Rekognition/Comprehend/etc). If it mentions <em>training your own model on your data</em>, it's <strong>SageMaker</strong>. If it mentions <em>generative AI / LLMs / chat / RAG</em>, it's <strong>Bedrock</strong> or <strong>Amazon Q</strong>.</p>
+</blockquote>
+<hr />
+<h2>🔑 KEYWORD → ANSWER DECODER (spot the trigger word → pick the service)</h2>
+<blockquote>
+<p>How to use this: scan the question for these <strong>trigger words</strong>. They almost always point to one service. This is the fastest way to answer service-mapping questions.</p>
+</blockquote>
+<h3>Generative AI triggers → Bedrock &amp; Amazon Q</h3>
+<table>
+<thead>
+<tr>
+<th>If you see these words…</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"foundation model", "LLM", "serverless GenAI", "Claude / Titan / Nova / Llama", "no infrastructure to manage"</td>
+<td><strong>Amazon Bedrock</strong></td>
+</tr>
+<tr>
+<td>"ground in company data", "reduce hallucination", "latest/internal/private documents", "cite sources", "RAG", "use our own data without retraining"</td>
+<td><strong>Bedrock Knowledge Bases (RAG)</strong></td>
+</tr>
+<tr>
+<td>"take action", "call APIs", "multi-step task", "orchestrate", "automate a workflow", "uses tools", "remembers context"</td>
+<td><strong>Bedrock Agents</strong></td>
+</tr>
+<tr>
+<td>"block harmful/toxic content", "deny topics", "redact PII", "safe responses", "content filter", "prevent prompt injection"</td>
+<td><strong>Bedrock Guardrails</strong></td>
+</tr>
+<tr>
+<td>"change behavior/style/tone", "specialized task", "train on labeled examples"</td>
+<td><strong>Fine-tuning</strong></td>
+</tr>
+<tr>
+<td>"adapt to a domain", "unlabeled domain data"</td>
+<td><strong>Continued pre-training</strong></td>
+</tr>
+<tr>
+<td>"GenAI assistant for employees", "chat over company apps/docs", "internal productivity assistant"</td>
+<td><strong>Amazon Q Business</strong></td>
+</tr>
+<tr>
+<td>"AI coding assistant", "code suggestions", "explain/fix code"</td>
+<td><strong>Amazon Q Developer</strong></td>
+</tr>
+<tr>
+<td>"no-code playground", "experiment with prompts"</td>
+<td><strong>PartyRock</strong></td>
+</tr>
+<tr>
+<td>"pre-built foundation models to deploy fast", "model hub"</td>
+<td><strong>SageMaker JumpStart</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>Prompt-engineering triggers</h3>
+<table>
+<thead>
+<tr>
+<th>If you see these words…</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"no examples given"</td>
+<td><strong>Zero-shot</strong></td>
+</tr>
+<tr>
+<td>"a few examples in the prompt"</td>
+<td><strong>Few-shot</strong></td>
+</tr>
+<tr>
+<td>"show step-by-step reasoning"</td>
+<td><strong>Chain-of-thought</strong></td>
+</tr>
+<tr>
+<td>"creativity / randomness dial"</td>
+<td><strong>Temperature</strong></td>
+</tr>
+<tr>
+<td>"attacker tricks the model / bypass safety"</td>
+<td><strong>Prompt injection / jailbreak</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>Pre-trained AI service triggers</h3>
+<table>
+<thead>
+<tr>
+<th>If you see these words…</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"image", "video", "faces", "objects", "celebrities", "moderate inappropriate images"</td>
+<td><strong>Rekognition</strong></td>
+</tr>
+<tr>
+<td>"extract text from documents", "scanned", "invoices", "forms", "tables from a PDF", "OCR"</td>
+<td><strong>Textract</strong></td>
+</tr>
+<tr>
+<td>"sentiment", "entities", "key phrases", "detect language", "PII in text", "topics"</td>
+<td><strong>Comprehend</strong></td>
+</tr>
+<tr>
+<td>"medical notes", "clinical", "PHI"</td>
+<td><strong>Comprehend Medical</strong></td>
+</tr>
+<tr>
+<td>"speech to text", "transcribe", "captions", "call recordings"</td>
+<td><strong>Transcribe</strong></td>
+</tr>
+<tr>
+<td>"text to speech", "lifelike voice", "read aloud", "voice output"</td>
+<td><strong>Polly</strong></td>
+</tr>
+<tr>
+<td>"translate", "multilingual", "convert language"</td>
+<td><strong>Translate</strong></td>
+</tr>
+<tr>
+<td>"chatbot", "conversational", "intents", "slots", "virtual agent", "Alexa-style"</td>
+<td><strong>Lex</strong></td>
+</tr>
+<tr>
+<td>"enterprise search", "search internal docs", "natural-language question over documents", "find answers in files"</td>
+<td><strong>Kendra</strong></td>
+</tr>
+<tr>
+<td>"recommendations", "personalized", "customers also bought", "product suggestions"</td>
+<td><strong>Personalize</strong></td>
+</tr>
+<tr>
+<td>"forecast", "predict demand", "time-series", "inventory/sales planning"</td>
+<td><strong>Forecast</strong></td>
+</tr>
+<tr>
+<td>"fraud", "fake accounts", "suspicious transactions"</td>
+<td><strong>Fraud Detector</strong></td>
+</tr>
+<tr>
+<td>"human review", "human-in-the-loop", "low-confidence predictions need checking"</td>
+<td><strong>Augmented AI (A2I)</strong></td>
+</tr>
+<tr>
+<td>"equipment", "sensors", "machine anomaly", "predictive maintenance", "industrial"</td>
+<td><strong>Lookout for Equipment / Monitron</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>SageMaker family triggers</h3>
+<table>
+<thead>
+<tr>
+<th>If you see these words…</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"build / train / deploy a custom model", "full control", "your own model"</td>
+<td><strong>SageMaker</strong></td>
+</tr>
+<tr>
+<td>"no-code ML", "business analyst", "visual ML", "without writing code"</td>
+<td><strong>SageMaker Canvas</strong></td>
+</tr>
+<tr>
+<td>"label / annotate training data"</td>
+<td><strong>SageMaker Ground Truth</strong></td>
+</tr>
+<tr>
+<td>"prepare / clean / transform data", "feature engineering visually"</td>
+<td><strong>SageMaker Data Wrangler</strong></td>
+</tr>
+<tr>
+<td>"automatically find the best model", "AutoML", "tries multiple algorithms"</td>
+<td><strong>SageMaker Autopilot</strong></td>
+</tr>
+<tr>
+<td>"detect bias", "fairness", "explain predictions", "feature importance", "explainability"</td>
+<td><strong>SageMaker Clarify</strong></td>
+</tr>
+<tr>
+<td>"model drift", "data drift", "quality degrades over time", "monitor model in production"</td>
+<td><strong>SageMaker Model Monitor</strong></td>
+</tr>
+<tr>
+<td>"store and reuse features", "central feature repository"</td>
+<td><strong>SageMaker Feature Store</strong></td>
+</tr>
+<tr>
+<td>"MLOps", "automate the ML workflow", "CI/CD for ML"</td>
+<td><strong>SageMaker Pipelines</strong></td>
+</tr>
+<tr>
+<td>"document the model", "model versioning/governance"</td>
+<td><strong>Model Cards / Model Registry</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>Security, compliance &amp; governance triggers</h3>
+<table>
+<thead>
+<tr>
+<th>If you see these words…</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"who did what and when", "audit trail", "track API calls", "log of activity"</td>
+<td><strong>CloudTrail</strong></td>
+</tr>
+<tr>
+<td>"monitor performance", "metrics", "logs", "alarms", "dashboards"</td>
+<td><strong>CloudWatch</strong></td>
+</tr>
+<tr>
+<td>"find sensitive data / PII in S3", "discover sensitive data in storage"</td>
+<td><strong>Macie</strong></td>
+</tr>
+<tr>
+<td>"encrypt", "manage encryption keys"</td>
+<td><strong>KMS</strong></td>
+</tr>
+<tr>
+<td>"permissions", "access control", "who can access", "least privilege"</td>
+<td><strong>IAM</strong></td>
+</tr>
+<tr>
+<td>"compliance reports", "SOC / ISO / PCI / HIPAA documentation to download"</td>
+<td><strong>AWS Artifact</strong></td>
+</tr>
+<tr>
+<td>"resource compliance", "configuration rules / tracking"</td>
+<td><strong>AWS Config</strong></td>
+</tr>
+<tr>
+<td>"automate gathering audit evidence"</td>
+<td><strong>AWS Audit Manager</strong></td>
+</tr>
+<tr>
+<td>"private connection", "no public internet", "keep traffic inside the network"</td>
+<td><strong>PrivateLink / VPC endpoints</strong></td>
+</tr>
+<tr>
+<td>"threat detection", "malicious activity"</td>
+<td><strong>GuardDuty</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>Responsible AI dimension triggers</h3>
+<table>
+<thead>
+<tr>
+<th>If you see these words…</th>
+<th>Answer / dimension</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"treat groups equally", "no discrimination"</td>
+<td><strong>Fairness</strong> (tool: Clarify)</td>
+</tr>
+<tr>
+<td>"explain why the model decided", "interpret", "feature importance"</td>
+<td><strong>Explainability</strong> (tool: Clarify)</td>
+</tr>
+<tr>
+<td>"open about how AI works / its limits", "service's intended use"</td>
+<td><strong>Transparency</strong> (AI Service Cards)</td>
+</tr>
+<tr>
+<td>"accurate / truthful output", "avoid false info"</td>
+<td><strong>Veracity</strong></td>
+</tr>
+<tr>
+<td>"human oversight of decisions"</td>
+<td><strong>Controllability / human-in-the-loop</strong> (A2I)</td>
+</tr>
+<tr>
+<td>"protect personal data in AI"</td>
+<td><strong>Privacy &amp; security</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>ML-concept triggers (Domains 1–2)</h3>
+<table>
+<thead>
+<tr>
+<th>If you see these words…</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"labeled data"</td>
+<td><strong>Supervised learning</strong></td>
+</tr>
+<tr>
+<td>"unlabeled data", "find patterns", "group / cluster"</td>
+<td><strong>Unsupervised learning</strong></td>
+</tr>
+<tr>
+<td>"reward / penalty", "trial and error"</td>
+<td><strong>Reinforcement learning</strong></td>
+</tr>
+<tr>
+<td>"memorizes training data, fails on new data"</td>
+<td><strong>Overfitting</strong></td>
+</tr>
+<tr>
+<td>"too simple", "misses patterns"</td>
+<td><strong>Underfitting</strong></td>
+</tr>
+<tr>
+<td>"predict a category / class"</td>
+<td><strong>Classification</strong></td>
+</tr>
+<tr>
+<td>"predict a number / continuous value"</td>
+<td><strong>Regression</strong></td>
+</tr>
+<tr>
+<td>"large dataset, not time-sensitive"</td>
+<td><strong>Batch inference</strong></td>
+</tr>
+<tr>
+<td>"low latency", "live", "immediate response"</td>
+<td><strong>Real-time inference</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Watch out for distractor pairs (the exam's favorite traps):</strong>
+- <strong>CloudTrail</strong> (audit: <em>who/when</em>) ≠ <strong>CloudWatch</strong> (performance: <em>metrics/health</em>)
+- <strong>RAG / Knowledge Bases</strong> (add facts) ≠ <strong>Fine-tuning</strong> (change behavior)
+- <strong>Clarify</strong> (bias/explainability) ≠ <strong>Model Monitor</strong> (drift) ≠ <strong>Guardrails</strong> (GenAI safety)
+- <strong>Textract</strong> (text <em>from documents</em>) ≠ <strong>Comprehend</strong> (<em>meaning</em> of text) ≠ <strong>Rekognition</strong> (<em>images/video</em>)
+- <strong>Kendra</strong> (search documents) ≠ <strong>Lex</strong> (chatbot) ≠ <strong>Q Business</strong> (GenAI assistant over your data)</p>
+</blockquote>
+<hr />
+<h2>DOMAIN 1 — AI &amp; ML Fundamentals (20%)</h2>
+<p><strong>Core hierarchy keywords:</strong> AI ⊃ ML ⊃ Deep Learning ⊃ Generative AI.
+- <strong>AI</strong> = machines doing human-like tasks. <strong>ML</strong> = learns from data, no explicit rules. <strong>Deep Learning</strong> = neural networks, many layers. <strong>GenAI</strong> = creates new content.</p>
+<p><strong>Learning types (high-yield):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Keyword</th>
+<th>Use case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Supervised</strong></td>
+<td><em>labeled</em> data</td>
+<td>classification, regression (spam filter, price prediction)</td>
+</tr>
+<tr>
+<td><strong>Unsupervised</strong></td>
+<td><em>unlabeled</em>, find patterns</td>
+<td>clustering, anomaly detection (customer segments)</td>
+</tr>
+<tr>
+<td><strong>Reinforcement</strong></td>
+<td><em>reward/penalty</em>, trial &amp; error</td>
+<td>robotics, game AI, recommendation tuning</td>
+</tr>
+<tr>
+<td><strong>Semi-supervised</strong></td>
+<td>mix labeled + unlabeled</td>
+<td>when labels are expensive</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Must-know terms:</strong>
+- <strong>Training</strong> = teach the model on data. <strong>Inference</strong> = use trained model to predict.
+- <strong>Classification</strong> = predict a category. <strong>Regression</strong> = predict a number.
+- <strong>Features</strong> = input variables. <strong>Labels</strong> = the answers (supervised).
+- <strong>Overfitting</strong> = memorized training data, fails on new data. <strong>Underfitting</strong> = too simple, misses patterns.
+- <strong>Bias–variance tradeoff</strong>: high bias = underfit; high variance = overfit.
+- <strong>Structured data</strong> (tables) vs <strong>unstructured</strong> (text, images, audio).
+- <strong>Inferencing types:</strong> <em>batch</em> (large datasets, not time-sensitive) vs <em>real-time</em> (low latency, live).</p>
+<blockquote>
+<p><strong>Tip:</strong> Exam loves "<strong>Is ML the right approach?</strong>" — ML fits when you have <em>lots of data + patterns too complex for rules</em>. If a simple <code>if-then</code> rule solves it, ML is <strong>overkill</strong> (wrong answer).</p>
+</blockquote>
+<hr />
+<h2>DOMAIN 2 — Generative AI Fundamentals (24%)</h2>
+<p><strong>Keywords:</strong> Foundation Model (FM), Large Language Model (LLM), transformer, tokens, embeddings, prompt, hallucination, multimodal.</p>
+<ul>
+<li><strong>Foundation Model (FM)</strong> = huge model pre-trained on broad data, adaptable to many tasks.</li>
+<li><strong>LLM</strong> = FM specialized for text. <strong>Transformer</strong> = the architecture behind LLMs (self-attention).</li>
+<li><strong>Tokens</strong> = chunks of text the model processes (you're billed per token).</li>
+<li><strong>Embeddings</strong> = numeric vector representation of meaning → enables semantic search &amp; RAG.</li>
+<li><strong>Prompt</strong> = your input/instruction. <strong>Context window</strong> = how much text the model can consider at once.</li>
+<li><strong>Hallucination</strong> = confident but false output (a <em>veracity/accuracy</em> problem).</li>
+<li><strong>Temperature</strong> = randomness/creativity dial (low = focused, high = creative).</li>
+<li><strong>Multimodal</strong> = handles text + image + audio + video.</li>
+</ul>
+<p><strong>GenAI capabilities to recognize:</strong> text generation, summarization, translation, chatbots, code generation, image generation, search.</p>
+<p><strong>Benefits/limitations (tested):</strong>
+- ✅ Benefits: fast, adaptable, low barrier, creative, simplifies tasks.
+- ⚠️ Limitations: hallucinations, nondeterminism, no inherent factual guarantee, can be costly, data cutoff (no recent knowledge unless grounded).</p>
+<blockquote>
+<p><strong>Tip:</strong> Know <strong>why GenAI fits or doesn't</strong>. Use GenAI for <em>content creation, summarization, conversation</em>. Do <strong>not</strong> use it where you need <em>guaranteed-correct numeric/factual output without grounding</em> — that's a hallucination trap answer.</p>
+</blockquote>
+<hr />
+<h2>DOMAIN 3 — Applications of Foundation Models (28%) ⭐ BIGGEST</h2>
+<p>This domain is mostly <strong>Amazon Bedrock</strong>. Learn it thoroughly.</p>
+<h3>Amazon Bedrock — the GenAI hub</h3>
+<p><strong>Keyword:</strong> <em>fully managed, serverless access to foundation models via one API.</em>
+- <strong>Model choice:</strong> Anthropic <strong>Claude</strong>, Amazon <strong>Titan / Nova</strong>, Meta <strong>Llama</strong>, <strong>Mistral</strong>, <strong>Cohere</strong>, <strong>AI21</strong>, <strong>Stability AI</strong> (images).
+- Serverless — <strong>no infrastructure to manage</strong>. Your data is <strong>not used to train</strong> the base models (privacy).</p>
+<p><strong>Bedrock core features (memorize all):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>What it does</th>
+<th>Keyword</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Knowledge Bases</strong></td>
+<td>Connects FM to <em>your</em> data → <strong>RAG</strong> (grounded, accurate answers)</td>
+<td>retrieval-augmented generation</td>
+</tr>
+<tr>
+<td><strong>Agents</strong></td>
+<td>FM that <em>takes actions</em>: calls APIs, multi-step tasks, uses memory</td>
+<td>autonomous, tool-using</td>
+</tr>
+<tr>
+<td><strong>Guardrails</strong></td>
+<td>Safety filters: block harmful content, deny topics, <strong>redact PII</strong>, reduce hallucinations</td>
+<td>responsible AI control</td>
+</tr>
+<tr>
+<td><strong>Model Evaluation</strong></td>
+<td>Compare models automatically or with human review</td>
+<td>pick the right FM</td>
+</tr>
+<tr>
+<td><strong>Fine-tuning</strong></td>
+<td>Train an FM further on <em>your labeled data</em></td>
+<td>customization (needs labeled data)</td>
+</tr>
+<tr>
+<td><strong>Continued pre-training</strong></td>
+<td>Adapt FM on your <em>unlabeled</em> domain data</td>
+<td>domain adaptation</td>
+</tr>
+<tr>
+<td><strong>Prompt Management / Flows</strong></td>
+<td>Build, version, chain prompts</td>
+<td>workflow</td>
+</tr>
+</tbody>
+</table>
+<h3>RAG vs Fine-tuning vs Prompt Engineering (VERY high-yield decision)</h3>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Choose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Inject <strong>current/proprietary facts</strong>, reduce hallucination, no retraining</td>
+<td><strong>RAG (Knowledge Bases)</strong></td>
+</tr>
+<tr>
+<td>Change model <strong>style/behavior/format</strong> for a specialized task</td>
+<td><strong>Fine-tuning</strong> (needs labeled data, more cost)</td>
+</tr>
+<tr>
+<td>Quick improvement, <strong>no data, no cost</strong></td>
+<td><strong>Prompt engineering</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Prompt engineering keywords:</strong> zero-shot (no examples), few-shot (give examples), chain-of-thought (show reasoning steps). <em>Prompt injection</em> / <em>jailbreaking</em> = attacks Guardrails defend against.</p>
+<h3>Other Domain-3 services</h3>
+<ul>
+<li><strong>Amazon Q Business</strong> = GenAI assistant over <em>your company data</em> (docs, apps) for employees.</li>
+<li><strong>Amazon Q Developer</strong> = AI coding assistant (formerly CodeWhisperer); also helps with AWS console/resources.</li>
+<li><strong>SageMaker JumpStart</strong> = hub of pre-built FMs &amp; solution templates to deploy quickly.</li>
+<li><strong>PartyRock</strong> = no-code Bedrock playground for experimentation.</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> "Reduce hallucinations / use latest internal data" → <strong>Knowledge Bases (RAG)</strong>, <em>not</em> fine-tuning. "Block toxic output or hide PII" → <strong>Guardrails</strong>. "Take actions / call systems" → <strong>Agents</strong>. These three are the most-tested Bedrock distinctions.</p>
+</blockquote>
+<hr />
+<h2>DOMAIN 4 — Responsible AI (14%)</h2>
+<p><strong>The dimensions of responsible AI (memorize the list):</strong>
+- <strong>Fairness</strong> (no bias across groups) · <strong>Explainability</strong> (understand <em>why</em>) · <strong>Transparency</strong> · <strong>Robustness</strong> · <strong>Privacy &amp; Security</strong> · <strong>Safety</strong> · <strong>Veracity</strong> (accuracy/truthfulness) · <strong>Controllability</strong> · <strong>Governance</strong>.</p>
+<p><strong>Key terms:</strong>
+- <strong>Bias</strong> = unfair skew in data or output. <strong>Fairness</strong> = equitable treatment.
+- <strong>Explainability / interpretability</strong> = ability to explain a model's decision (important for regulated industries).
+- <strong>Transparency</strong> = being open about how AI works and its limits.</p>
+<p><strong>Tools that enforce responsible AI:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SageMaker Clarify</strong></td>
+<td>Detect <strong>bias</strong> in data/models + <strong>explainability</strong> (feature importance)</td>
+</tr>
+<tr>
+<td><strong>SageMaker Model Monitor</strong></td>
+<td>Detect <strong>drift</strong> in production (data/quality changes over time)</td>
+</tr>
+<tr>
+<td><strong>Bedrock Guardrails</strong></td>
+<td>Block harmful content, denied topics, <strong>PII redaction</strong>, hallucination/contextual-grounding checks</td>
+</tr>
+<tr>
+<td><strong>AWS AI Service Cards</strong></td>
+<td>Docs on intended use, limitations, fairness of AWS AI services (<strong>transparency</strong>)</td>
+</tr>
+<tr>
+<td><strong>SageMaker Model Cards</strong></td>
+<td>Document a model's purpose, performance, risks (governance)</td>
+</tr>
+<tr>
+<td><strong>Augmented AI (A2I)</strong></td>
+<td><strong>Human-in-the-loop</strong> review of risky/low-confidence predictions</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> Match the dimension to the tool: <em>bias/explainability</em> → <strong>Clarify</strong>; <em>drift</em> → <strong>Model Monitor</strong>; <em>toxic output/PII in GenAI</em> → <strong>Guardrails</strong>; <em>transparency about a service</em> → <strong>AI Service Cards</strong>; <em>human oversight</em> → <strong>A2I</strong>.</p>
+</blockquote>
+<hr />
+<h2>DOMAIN 5 — Security, Compliance &amp; Governance (14%)</h2>
+<p><strong>Foundational security keywords:</strong> least privilege, encryption at rest/in transit, shared responsibility, data residency, audit.</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Keyword</th>
+<th>Role in AI context</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>IAM</strong></td>
+<td>identity &amp; access</td>
+<td><em>least-privilege</em> permissions to AI services/data</td>
+</tr>
+<tr>
+<td><strong>KMS</strong></td>
+<td>encryption keys</td>
+<td>encrypt data at rest (S3, SageMaker, Bedrock)</td>
+</tr>
+<tr>
+<td><strong>S3</strong></td>
+<td>object storage</td>
+<td>where training data &amp; artifacts live</td>
+</tr>
+<tr>
+<td><strong>Macie</strong></td>
+<td>discover <strong>PII in S3</strong></td>
+<td>data classification, privacy</td>
+</tr>
+<tr>
+<td><strong>CloudWatch</strong></td>
+<td>metrics, logs, alarms</td>
+<td><strong>monitor</strong> model/endpoint performance</td>
+</tr>
+<tr>
+<td><strong>CloudTrail</strong></td>
+<td><strong>audit log</strong> of API calls</td>
+<td><em>who did what, when</em> (governance/compliance)</td>
+</tr>
+<tr>
+<td><strong>AWS Config</strong></td>
+<td>resource compliance tracking</td>
+<td>configuration governance</td>
+</tr>
+<tr>
+<td><strong>AWS Audit Manager</strong></td>
+<td>automate compliance evidence</td>
+<td>audits</td>
+</tr>
+<tr>
+<td><strong>AWS Artifact</strong></td>
+<td>on-demand <strong>compliance reports</strong> (SOC, ISO)</td>
+<td>proof of compliance</td>
+</tr>
+<tr>
+<td><strong>PrivateLink / VPC</strong></td>
+<td>private network access</td>
+<td>keep AI traffic off the public internet</td>
+</tr>
+<tr>
+<td><strong>GuardDuty</strong></td>
+<td>threat detection</td>
+<td>security monitoring</td>
+</tr>
+</tbody>
+</table>
+<h3>Data protection (high-yield)</h3>
+<ul>
+<li><strong>Encryption at rest</strong> = data stored encrypted (S3, EBS, SageMaker volumes) → use <strong>KMS</strong>.</li>
+<li><strong>Encryption in transit</strong> = data moving over the network encrypted → <strong>TLS/SSL</strong>.</li>
+<li><strong>Data residency / sovereignty</strong> = keep data in a specific <strong>AWS Region</strong> for legal reasons.</li>
+<li><strong>Bedrock privacy:</strong> your prompts and data are <strong>not used to train</strong> the base foundation models, and are not shared with model providers.</li>
+<li><strong>Anonymization / PII handling:</strong> redact PII before training/inference → <strong>Comprehend (PII detection)</strong>, <strong>Macie (find PII in S3)</strong>, <strong>Bedrock Guardrails (redact PII in GenAI)</strong>.</li>
+</ul>
+<h3>AI/ML-specific security threats (the exam tests these)</h3>
+<table>
+<thead>
+<tr>
+<th>Threat</th>
+<th>What it is</th>
+<th>Defense</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Prompt injection</strong></td>
+<td>Malicious input overrides the model's instructions</td>
+<td><strong>Bedrock Guardrails</strong>, input validation</td>
+</tr>
+<tr>
+<td><strong>Jailbreaking</strong></td>
+<td>Tricking the model into bypassing safety rules</td>
+<td><strong>Guardrails</strong>, denied topics</td>
+</tr>
+<tr>
+<td><strong>Data poisoning</strong></td>
+<td>Corrupting training data to bias the model</td>
+<td>data validation, trusted sources, lineage</td>
+</tr>
+<tr>
+<td><strong>Model inversion / extraction</strong></td>
+<td>Attacker reconstructs training data or copies the model</td>
+<td>access control (IAM), rate limiting, monitoring</td>
+</tr>
+<tr>
+<td><strong>Sensitive data leakage</strong></td>
+<td>Model reveals PII in its output</td>
+<td><strong>Guardrails PII redaction</strong>, data minimization</td>
+</tr>
+<tr>
+<td><strong>Hallucination</strong></td>
+<td>Confident false output (integrity risk)</td>
+<td><strong>RAG / Knowledge Bases</strong>, Guardrails grounding checks</td>
+</tr>
+</tbody>
+</table>
+<h3>Compliance frameworks (recognize the names)</h3>
+<ul>
+<li><strong>GDPR</strong> (EU privacy), <strong>HIPAA</strong> (US health data), <strong>SOC 1/2/3</strong>, <strong>ISO 27001</strong>, <strong>PCI DSS</strong> (payment cards).</li>
+<li>Download proof of AWS compliance → <strong>AWS Artifact</strong>. Automate audit evidence → <strong>Audit Manager</strong>.</li>
+</ul>
+<h3>Governance concepts</h3>
+<p>Data lineage (track data origin/flow), data cataloging, model versioning &amp; <strong>Model Cards</strong> (document purpose, risks, performance), access logging, ongoing monitoring, and <strong>bias/drift review</strong>.</p>
+<p><strong>Shared Responsibility Model:</strong> AWS secures the cloud <em>infrastructure</em> (hardware, regions, managed-service backbone); <strong>you</strong> secure your <em>data, IAM access, encryption settings, and configuration</em>. For managed AI services (Bedrock, Comprehend, etc.) AWS handles more; for SageMaker you manage more of the stack.</p>
+<blockquote>
+<p><strong>Tip:</strong> <em>"Who called the API and when?"</em> → <strong>CloudTrail</strong> (audit). <em>"Monitor performance/health"</em> → <strong>CloudWatch</strong>. <em>"Find sensitive data in storage"</em> → <strong>Macie</strong>. <em>"Encrypt at rest"</em> → <strong>KMS</strong>. <em>"Malicious prompt / toxic output / leak PII in GenAI"</em> → <strong>Guardrails</strong>. <em>"Proof of compliance to give an auditor"</em> → <strong>AWS Artifact</strong>. Don't mix up CloudTrail (audit) vs CloudWatch (performance) — that's the #1 security trap.</p>
+</blockquote>
+<hr />
+<h2>🗂️ MASTER SERVICE CHEAT SHEET (one-liners + tip)</h2>
+<h3>Ready-to-use AI services (pre-trained, API, no ML skills needed)</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>One-line</th>
+<th>Exam keyword</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Rekognition</strong></td>
+<td>Image &amp; video analysis</td>
+<td>faces, objects, moderation, celebrities</td>
+</tr>
+<tr>
+<td><strong>Textract</strong></td>
+<td>Extract text/tables/forms from docs</td>
+<td>OCR+, invoices, more than OCR</td>
+</tr>
+<tr>
+<td><strong>Comprehend</strong></td>
+<td>NLP on text</td>
+<td>sentiment, entities, PII, topic</td>
+</tr>
+<tr>
+<td><strong>Comprehend Medical</strong></td>
+<td>NLP for medical text</td>
+<td>PHI, clinical</td>
+</tr>
+<tr>
+<td><strong>Transcribe</strong></td>
+<td>Speech → text</td>
+<td>call analytics, captions</td>
+</tr>
+<tr>
+<td><strong>Transcribe Medical</strong></td>
+<td>Medical speech → text</td>
+<td>clinical dictation</td>
+</tr>
+<tr>
+<td><strong>Translate</strong></td>
+<td>Language translation</td>
+<td>real-time, batch</td>
+</tr>
+<tr>
+<td><strong>Polly</strong></td>
+<td>Text → lifelike speech</td>
+<td>voices, SSML</td>
+</tr>
+<tr>
+<td><strong>Lex</strong></td>
+<td>Chatbots / voice bots</td>
+<td>intents, slots, powers Alexa</td>
+</tr>
+<tr>
+<td><strong>Kendra</strong></td>
+<td>Intelligent enterprise search</td>
+<td>natural-language doc search</td>
+</tr>
+<tr>
+<td><strong>Personalize</strong></td>
+<td>Real-time recommendations</td>
+<td>"customers also bought"</td>
+</tr>
+<tr>
+<td><strong>Forecast</strong></td>
+<td>Time-series forecasting</td>
+<td>demand, inventory</td>
+</tr>
+<tr>
+<td><strong>Fraud Detector</strong></td>
+<td>Detect online fraud</td>
+<td>fake accounts, payment fraud</td>
+</tr>
+<tr>
+<td><strong>Augmented AI (A2I)</strong></td>
+<td>Human review of predictions</td>
+<td>human-in-the-loop</td>
+</tr>
+<tr>
+<td><strong>Lookout / Monitron</strong></td>
+<td>Industrial anomaly detection</td>
+<td>equipment, vision, metrics</td>
+</tr>
+</tbody>
+</table>
+<h3>Generative AI services</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>One-line</th>
+<th>Exam keyword</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bedrock</strong></td>
+<td>Managed access to foundation models</td>
+<td>serverless FMs, Claude/Titan/Llama</td>
+</tr>
+<tr>
+<td><strong>Bedrock Knowledge Bases</strong></td>
+<td>Ground FMs in your data</td>
+<td><strong>RAG</strong></td>
+</tr>
+<tr>
+<td><strong>Bedrock Agents</strong></td>
+<td>FMs that take multi-step actions</td>
+<td>tool use, automation</td>
+</tr>
+<tr>
+<td><strong>Bedrock Guardrails</strong></td>
+<td>Safety controls for GenAI</td>
+<td>filter, deny topics, PII redaction</td>
+</tr>
+<tr>
+<td><strong>Amazon Q Business</strong></td>
+<td>GenAI assistant over company data</td>
+<td>employee productivity</td>
+</tr>
+<tr>
+<td><strong>Amazon Q Developer</strong></td>
+<td>AI coding assistant</td>
+<td>code gen, AWS help</td>
+</tr>
+<tr>
+<td><strong>PartyRock</strong></td>
+<td>No-code Bedrock playground</td>
+<td>experiment</td>
+</tr>
+</tbody>
+</table>
+<h3>SageMaker family (build/train/deploy your own ML)</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>One-line</th>
+<th>Exam keyword</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SageMaker (AI)</strong></td>
+<td>End-to-end ML platform</td>
+<td>build, train, deploy</td>
+</tr>
+<tr>
+<td><strong>SageMaker Studio</strong></td>
+<td>ML IDE</td>
+<td>unified workbench</td>
+</tr>
+<tr>
+<td><strong>SageMaker Canvas</strong></td>
+<td><strong>No-code</strong> ML for analysts</td>
+<td>visual, no coding</td>
+</tr>
+<tr>
+<td><strong>SageMaker Data Wrangler</strong></td>
+<td>Data prep</td>
+<td>clean/transform features</td>
+</tr>
+<tr>
+<td><strong>SageMaker Ground Truth</strong></td>
+<td>Data labeling</td>
+<td>training-data labels</td>
+</tr>
+<tr>
+<td><strong>SageMaker JumpStart</strong></td>
+<td>Pre-built models &amp; solutions</td>
+<td>quick deploy, FMs</td>
+</tr>
+<tr>
+<td><strong>SageMaker Autopilot</strong></td>
+<td>AutoML</td>
+<td>auto model building</td>
+</tr>
+<tr>
+<td><strong>SageMaker Clarify</strong></td>
+<td>Bias detection + explainability</td>
+<td>fairness, SHAP</td>
+</tr>
+<tr>
+<td><strong>SageMaker Model Monitor</strong></td>
+<td>Drift detection in production</td>
+<td>data/quality drift</td>
+</tr>
+<tr>
+<td><strong>SageMaker Feature Store</strong></td>
+<td>Central feature repository</td>
+<td>reuse features</td>
+</tr>
+<tr>
+<td><strong>SageMaker Pipelines</strong></td>
+<td>MLOps workflow automation</td>
+<td>CI/CD for ML</td>
+</tr>
+<tr>
+<td><strong>SageMaker Model Cards/Registry</strong></td>
+<td>Document &amp; version models</td>
+<td>governance</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>🏢 WHICH SERVICE FOR WHICH KIND OF COMPANY (industry → best fit)</h2>
+<blockquote>
+<p>Exam questions are often framed as <em>"A [retail/healthcare/bank] company wants to…"</em>. Match the <strong>industry + need</strong> to the right services.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Company / industry</th>
+<th>Common needs → best-fit services</th>
+<th>Key point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>E-commerce / Retail</strong></td>
+<td>Recommendations → <strong>Personalize</strong> · demand forecasting → <strong>Forecast</strong> · visual/product search → <strong>Rekognition</strong> · support bot → <strong>Lex</strong> · payment fraud → <strong>Fraud Detector</strong></td>
+<td>Personalization + forecasting drive revenue</td>
+</tr>
+<tr>
+<td><strong>Banking / Finance / Fintech</strong></td>
+<td>Fraud → <strong>Fraud Detector</strong> · KYC/ID &amp; statement extraction → <strong>Textract</strong> · document/email analysis → <strong>Comprehend</strong> · advisory chatbot → <strong>Bedrock + Guardrails</strong> · compliance → <strong>Artifact, CloudTrail, KMS</strong></td>
+<td>Security &amp; compliance are critical (PCI, SOC)</td>
+</tr>
+<tr>
+<td><strong>Healthcare / Pharma</strong></td>
+<td>Clinical notes → <strong>Comprehend Medical</strong> · doctor dictation → <strong>Transcribe Medical</strong> · human review of AI → <strong>A2I</strong></td>
+<td><strong>HIPAA</strong>; protect PHI; human-in-the-loop</td>
+</tr>
+<tr>
+<td><strong>Manufacturing / Industrial</strong></td>
+<td>Equipment failure prediction → <strong>Lookout for Equipment / Monitron</strong> · defect detection → <strong>Lookout for Vision</strong> · metric anomalies → <strong>Lookout for Metrics</strong></td>
+<td>Predictive maintenance reduces downtime</td>
+</tr>
+<tr>
+<td><strong>Media / Entertainment</strong></td>
+<td>Content moderation &amp; metadata → <strong>Rekognition</strong> · subtitles → <strong>Transcribe</strong> · localization → <strong>Translate</strong> · narration/audiobooks → <strong>Polly</strong></td>
+<td>Automate tagging, captioning, dubbing</td>
+</tr>
+<tr>
+<td><strong>Customer service / Call centers</strong></td>
+<td>Chat/voice bot → <strong>Lex</strong> · contact center → <strong>Amazon Connect</strong> · call transcription &amp; sentiment → <strong>Transcribe Call Analytics + Comprehend</strong> · agent assist → <strong>Amazon Q in Connect</strong></td>
+<td>Deflect tickets + analyze sentiment</td>
+</tr>
+<tr>
+<td><strong>Legal / Insurance / Document-heavy</strong></td>
+<td>Extract from contracts/claims → <strong>Textract</strong> · classify/analyze text → <strong>Comprehend</strong> · search documents → <strong>Kendra</strong> · Q&amp;A over policies → <strong>Bedrock Knowledge Bases (RAG)</strong></td>
+<td>Turn unstructured docs into searchable data</td>
+</tr>
+<tr>
+<td><strong>Marketing / Content / Advertising</strong></td>
+<td>Generate copy/images → <strong>Bedrock</strong> · voiceover → <strong>Polly</strong> · translate campaigns → <strong>Translate</strong> · personalize content → <strong>Personalize</strong></td>
+<td>GenAI for content at scale</td>
+</tr>
+<tr>
+<td><strong>Software / Tech companies</strong></td>
+<td>Build GenAI apps → <strong>Bedrock</strong> · custom ML → <strong>SageMaker</strong> · coding assistant → <strong>Amazon Q Developer</strong></td>
+<td>Build vs buy: custom = SageMaker</td>
+</tr>
+<tr>
+<td><strong>Enterprise / HR / Internal productivity</strong></td>
+<td>Employee assistant over company data → <strong>Amazon Q Business</strong> · internal search → <strong>Kendra</strong></td>
+<td>Boost employee productivity securely</td>
+</tr>
+<tr>
+<td><strong>Startups / small teams (fast GenAI)</strong></td>
+<td>Quick FM access → <strong>Bedrock</strong> · pre-built models → <strong>SageMaker JumpStart</strong> · no-code experiment → <strong>PartyRock</strong></td>
+<td>Low effort, serverless, fast to launch</td>
+</tr>
+<tr>
+<td><strong>Education / e-learning</strong></td>
+<td>Read content aloud → <strong>Polly</strong> · translate lessons → <strong>Translate</strong> · transcribe lectures → <strong>Transcribe</strong> · tutoring assistant → <strong>Bedrock</strong></td>
+<td>Accessibility + multilingual reach</td>
+</tr>
+<tr>
+<td><strong>Business analysts (no ML skills)</strong></td>
+<td>No-code model building → <strong>SageMaker Canvas</strong> · GenAI assistant → <strong>Amazon Q</strong></td>
+<td>"No coding" → Canvas or Q</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> Two signals decide most "company" questions: <strong>(1) the data type</strong> (images→Rekognition, documents→Textract, text meaning→Comprehend, speech→Transcribe) and <strong>(2) the effort level</strong> ("no ML skills / fast" → managed AI service or Canvas/Q; "full control / custom" → SageMaker; "generative / LLM" → Bedrock).</p>
+</blockquote>
+<hr />
+<h2>📚 COMPLETE AI SERVICE REFERENCE (every service · key points + short explanation)</h2>
+<h3>A. Ready-to-use AI services (pre-trained APIs — no ML skills required)</h3>
+<p><strong>Amazon Rekognition</strong> — image &amp; video analysis.
+- Detects objects, scenes, faces, celebrities, and text in images/video.
+- <strong>Content moderation</strong> flags unsafe/inappropriate content; <strong>face comparison</strong> for identity verification.
+- No model training needed — call the API.</p>
+<p><strong>Amazon Textract</strong> — intelligent document data extraction.
+- More than OCR: extracts <strong>forms (key-value pairs)</strong> and <strong>tables</strong>, not just raw text.
+- Handles invoices, receipts, IDs, and forms automatically.
+- Pairs well with <strong>A2I</strong> for human review of low-confidence extractions.</p>
+<p><strong>Amazon Comprehend</strong> — natural language processing (NLP).
+- Finds <strong>sentiment, entities, key phrases, language, and PII</strong> in text.
+- Supports <strong>custom classification</strong> and <strong>custom entity</strong> recognition.
+- Use for reviews, support tickets, and PII redaction.</p>
+<p><strong>Amazon Comprehend Medical</strong> — NLP for medical text.
+- Extracts <strong>PHI</strong>, medical conditions, medications, and clinical entities (ICD-10, RxNorm).
+- Built for HIPAA-eligible healthcare workloads.</p>
+<p><strong>Amazon Transcribe</strong> — automatic speech recognition (speech → text).
+- Real-time and batch; <strong>speaker identification</strong>, custom vocabulary, <strong>automatic PII redaction</strong>.
+- <strong>Call Analytics</strong> adds sentiment and call summaries for contact centers.</p>
+<p><strong>Amazon Transcribe Medical</strong> — clinical speech-to-text for medical dictation.</p>
+<p><strong>Amazon Translate</strong> — neural machine translation.
+- Translates across <strong>75+ languages</strong>, real-time and batch.
+- <strong>Custom terminology</strong> keeps brand/industry terms accurate.</p>
+<p><strong>Amazon Polly</strong> — text-to-speech (text → lifelike voice).
+- <strong>Neural TTS</strong> voices in many languages; <strong>SSML</strong> controls pronunciation, pitch, pauses.
+- Use for IVR, audiobooks, and accessibility.</p>
+<p><strong>Amazon Lex</strong> — conversational AI / chatbots.
+- Same technology as <strong>Alexa</strong>; uses <strong>intents, utterances, and slots</strong>.
+- Supports voice and text; integrates with <strong>Lambda</strong> and <strong>Amazon Connect</strong>.</p>
+<p><strong>Amazon Kendra</strong> — intelligent enterprise search.
+- ML-powered <strong>natural-language search</strong> across internal documents.
+- Returns <strong>precise answers</strong>, not just links; many built-in <strong>connectors</strong> (S3, SharePoint, etc.).</p>
+<p><strong>Amazon Personalize</strong> — real-time recommendations.
+- Same tech behind Amazon.com recommendations.
+- Delivers personalized recommendations, similar items, and personalized ranking from your data.</p>
+<p><strong>Amazon Forecast</strong> — time-series forecasting.
+- ML-based forecasts for <strong>demand, inventory, and financial planning</strong>.
+- (Capabilities are being folded into <strong>SageMaker Canvas</strong>, but still appears on the exam.)</p>
+<p><strong>Amazon Fraud Detector</strong> — online fraud detection.
+- Detects <strong>fake accounts and payment fraud</strong> using your historical data plus Amazon's fraud expertise.
+- No ML experience required.</p>
+<p><strong>Amazon Augmented AI (A2I)</strong> — human-in-the-loop review.
+- Routes <strong>low-confidence predictions</strong> to human reviewers.
+- Works with <strong>Rekognition, Textract,</strong> or your own models — key for <strong>responsible AI</strong>.</p>
+<p><strong>Amazon Lookout for Equipment</strong> — predictive maintenance from sensor data.
+<strong>Amazon Lookout for Vision</strong> — visual <strong>defect detection</strong> in manufacturing images.
+<strong>Amazon Lookout for Metrics</strong> — <strong>anomaly detection</strong> in business metrics (sales, revenue dips).
+<strong>Amazon Monitron</strong> — end-to-end equipment monitoring (sensors + gateway + ML).</p>
+<h3>B. Generative AI services</h3>
+<p><strong>Amazon Bedrock</strong> — managed access to foundation models.
+- One <strong>serverless</strong> API for models from <strong>Anthropic (Claude), Amazon (Titan/Nova), Meta (Llama), Mistral, Cohere, AI21, Stability AI</strong>.
+- Your data is <strong>not used to train</strong> the base models.
+- Built-in features: <strong>Knowledge Bases, Agents, Guardrails, fine-tuning, model evaluation</strong>.</p>
+<p><strong>Bedrock Knowledge Bases</strong> — managed <strong>RAG</strong>.
+- Connects an FM to <strong>your data</strong> to ground answers and <strong>reduce hallucinations</strong> without retraining.</p>
+<p><strong>Bedrock Agents</strong> — action-taking GenAI.
+- Breaks tasks into steps, <strong>calls APIs/tools</strong>, and retains memory to complete multi-step jobs.</p>
+<p><strong>Bedrock Guardrails</strong> — responsible-AI safety layer.
+- Filters harmful content, blocks <strong>denied topics</strong>, <strong>redacts PII</strong>, and checks for hallucinations.</p>
+<p><strong>Amazon Q Business</strong> — GenAI assistant for employees.
+- Answers questions and acts over <strong>your company's data and apps</strong>; respects user permissions.</p>
+<p><strong>Amazon Q Developer</strong> — AI coding assistant.
+- Code generation, explanations, and AWS resource help (formerly CodeWhisperer).</p>
+<p><strong>Amazon SageMaker JumpStart</strong> — model &amp; solution hub.
+- One-click access to <strong>pre-built foundation models</strong> and ML solution templates to deploy fast.</p>
+<p><strong>PartyRock</strong> — no-code Bedrock playground for experimenting with GenAI apps.</p>
+<h3>C. Amazon SageMaker family (build, train &amp; deploy your own ML)</h3>
+<p><strong>Amazon SageMaker (AI)</strong> — end-to-end ML platform to <strong>build, train, tune, and deploy</strong> custom models with full control.</p>
+<p><strong>SageMaker Studio</strong> — the unified web-based <strong>IDE</strong> for ML development.</p>
+<p><strong>SageMaker Canvas</strong> — <strong>no-code</strong> ML for business analysts; build and predict visually, no coding.</p>
+<p><strong>SageMaker Data Wrangler</strong> — visual <strong>data preparation</strong> and feature engineering.</p>
+<p><strong>SageMaker Ground Truth</strong> — <strong>data labeling</strong> (human + automated) to create training datasets.</p>
+<p><strong>SageMaker Autopilot</strong> — <strong>AutoML</strong>; automatically tries algorithms and builds the best model.</p>
+<p><strong>SageMaker Clarify</strong> — detects <strong>bias</strong> in data/models and provides <strong>explainability</strong> (feature importance) — core responsible-AI tool.</p>
+<p><strong>SageMaker Model Monitor</strong> — detects <strong>data/model drift</strong> in production, so accuracy doesn't silently degrade.</p>
+<p><strong>SageMaker Feature Store</strong> — central repository to <strong>store and reuse features</strong> across teams/models.</p>
+<p><strong>SageMaker Pipelines</strong> — <strong>MLOps</strong>; automate and version the ML workflow (CI/CD for ML).</p>
+<p><strong>SageMaker Model Cards / Model Registry</strong> — <strong>document, version, and govern</strong> models (purpose, performance, risks).</p>
+<hr />
+<h2>☁️ AWS CLOUD FUNDAMENTALS (cloud-base knowledge on the exam)</h2>
+<p><strong>Global infrastructure</strong>
+- <strong>Region</strong> = geographic area (e.g., Singapore <code>ap-southeast-1</code>); choose for <em>latency, cost, and compliance/data residency</em>.
+- <strong>Availability Zone (AZ)</strong> = isolated data center(s) inside a Region; using multiple AZs = <strong>high availability</strong>.
+- <strong>Edge Location</strong> = CloudFront cache points near users for <strong>low latency</strong>.</p>
+<p><strong>Core services that support AI workloads</strong>
+- <strong>Amazon S3</strong> = object storage → default home for <strong>training data, datasets, model artifacts</strong>.
+- <strong>Amazon EC2</strong> = virtual servers; <strong>GPU instances</strong> (P/G families) for training &amp; inference.
+- <strong>AWS Lambda</strong> = <strong>serverless</strong> functions; run code with no servers (e.g., trigger inference).
+- <strong>Amazon VPC</strong> = your private network; <strong>PrivateLink / VPC endpoints</strong> keep AI traffic off the public internet.
+- <strong>Vector database</strong> (Amazon OpenSearch, Aurora/RDS <strong>pgvector</strong>) = stores <strong>embeddings</strong> for <strong>RAG</strong> retrieval.
+- <strong>RDS / DynamoDB</strong> = relational / NoSQL databases for app data.</p>
+<p><strong>Ways to access AWS</strong>
+- <strong>Management Console</strong> (web UI) · <strong>CLI</strong> (command line) · <strong>SDK</strong> (in code) · <strong>APIs</strong>.</p>
+<p><strong>Pricing &amp; cost (high-yield)</strong>
+- <strong>Pay-as-you-go</strong> — pay only for what you use, no upfront commitment.
+- <strong>On-demand</strong> vs <strong>provisioned throughput</strong> (Bedrock: provisioned = reserved capacity for steady high volume).
+- GenAI is billed per <strong>token</strong> (input + output); larger models and longer context cost more.
+- <strong>Cost levers:</strong> pick a <strong>smaller/cheaper model</strong> when it's enough, use <strong>RAG instead of fine-tuning</strong>, batch requests, cache.
+- <strong>AWS Pricing Calculator</strong> estimates cost; <strong>Cost Explorer / Budgets</strong> track and alert on spend.</p>
+<p><strong>AWS Well-Architected Framework — 6 pillars</strong> (recognize them)
+- Operational Excellence · Security · Reliability · Performance Efficiency · Cost Optimization · Sustainability.</p>
+<p><strong>Shared Responsibility (recap):</strong> AWS = security <strong>of</strong> the cloud (infrastructure); <strong>you</strong> = security <strong>in</strong> the cloud (data, access, config).</p>
+<hr />
+<h2>🧠 EXTRA EXAM KNOWLEDGE (high-yield odds &amp; ends)</h2>
+<p><strong>ML development lifecycle (know the order)</strong>
+- Business problem → data collection → data preparation → <strong>feature engineering</strong> → model training → <strong>evaluation</strong> → deployment → <strong>monitoring</strong>.</p>
+<p><strong>Model evaluation metrics</strong>
+- <strong>Classification:</strong> accuracy, <strong>precision</strong>, <strong>recall</strong>, <strong>F1 score</strong>, confusion matrix, <strong>AUC-ROC</strong>.
+- <strong>Regression:</strong> MAE, MSE, <strong>RMSE</strong>.
+- <strong>LLM / GenAI:</strong> <strong>BLEU</strong> (translation), <strong>ROUGE</strong> (summarization), perplexity, plus <strong>human evaluation</strong>.
+- <strong>Bedrock Model Evaluation</strong> runs automatic + human evaluation to compare foundation models.</p>
+<p><strong>Precision vs recall (common trap)</strong>
+- <strong>Precision</strong> = of predicted positives, how many were right (minimize false positives).
+- <strong>Recall</strong> = of actual positives, how many were caught (minimize false negatives).</p>
+<p><strong>Fit &amp; error terms</strong>
+- <strong>Overfitting</strong> = memorizes training data, fails on new data. <strong>Underfitting</strong> = too simple, misses patterns.
+- <strong>Bias</strong> = systematic error/unfairness. <strong>Variance</strong> = over-sensitivity to training data.</p>
+<p><strong>Inference options</strong>
+- <strong>Real-time</strong> (low-latency endpoint) · <strong>batch</strong> (bulk, cheaper, not time-sensitive) · <strong>serverless</strong> · <strong>asynchronous</strong> (large payloads).</p>
+<p><strong>Prompt engineering quick tips</strong>
+- Be specific, give context and <strong>examples (few-shot)</strong>, specify the <strong>output format</strong>, set a <strong>role/persona</strong>, and tune <strong>temperature</strong> for creativity.</p>
+<p><strong>RAG vs Fine-tuning vs Prompt engineering (one-line recap)</strong>
+- Need <strong>current/private facts</strong> → <strong>RAG</strong>. Change <strong>behavior/style</strong> → <strong>fine-tune</strong>. Quick win, <strong>no data/cost</strong> → <strong>prompt engineering</strong>.</p>
+<p><strong>Responsible AI dimensions (recap):</strong> fairness · explainability · transparency · veracity · privacy &amp; security · safety · controllability · governance.</p>
+<hr />
+<h2>📖 EXAM VOCABULARY GLOSSARY (terms that show up in questions)</h2>
+<blockquote>
+<p>These are the words AIF-C01 questions love to hide behind. Know the one-line meaning of each.</p>
+</blockquote>
+<h3>Data &amp; governance terms</h3>
+<ul>
+<li><strong>Data literacy</strong> — the ability to read, understand, and work with data to make decisions.</li>
+<li><strong>Data governance</strong> — policies and processes for managing data quality, security, access, and ownership.</li>
+<li><strong>Data lineage</strong> — tracking where data came from and how it moved/transformed over time.</li>
+<li><strong>Data quality</strong> — how accurate, complete, consistent, and reliable the data is.</li>
+<li><strong>Data labeling / annotation</strong> — tagging data with the correct answers for supervised learning.</li>
+<li><strong>Data augmentation</strong> — creating more training data by modifying existing samples (rotate, crop, paraphrase).</li>
+<li><strong>Ground truth</strong> — the verified correct answers/labels used to train or evaluate a model.</li>
+<li><strong>Structured data</strong> — organized in tables/rows (databases). <strong>Unstructured data</strong> — text, images, audio, video.</li>
+<li><strong>Data lake</strong> — store raw data of any type at scale. <strong>Data warehouse</strong> — store structured, query-ready data.</li>
+<li><strong>ETL</strong> — Extract, Transform, Load: moving and preparing data for use.</li>
+<li><strong>Bias (data)</strong> — unrepresentative or skewed data that leads to unfair outcomes.</li>
+</ul>
+<h3>Drift &amp; monitoring terms</h3>
+<ul>
+<li><strong>Data drift</strong> — the input data distribution changes over time vs training data.</li>
+<li><strong>Concept drift</strong> — the relationship between inputs and the correct output changes over time.</li>
+<li><strong>Model decay / degradation</strong> — accuracy drops over time → needs retraining (detected by <strong>Model Monitor</strong>).</li>
+</ul>
+<h3>Core ML terms</h3>
+<ul>
+<li><strong>Algorithm</strong> — the method/procedure used to learn from data. <strong>Model</strong> — the trained result of that algorithm.</li>
+<li><strong>Parameters / weights</strong> — values the model <em>learns</em> during training.</li>
+<li><strong>Hyperparameters</strong> — settings you <em>configure before</em> training (e.g., learning rate, epochs).</li>
+<li><strong>Epoch</strong> — one full pass through the training data.</li>
+<li><strong>Feature</strong> — an input variable. <strong>Label</strong> — the target answer (supervised).</li>
+<li><strong>Generalization</strong> — how well a model performs on new, unseen data.</li>
+<li><strong>Inference</strong> — using a trained model to make predictions.</li>
+<li><strong>Training / validation / test split</strong> — separate data used to train, tune, and finally evaluate a model.</li>
+</ul>
+<h3>Generative AI / LLM terms</h3>
+<ul>
+<li><strong>Foundation model (FM)</strong> — large pre-trained model adaptable to many tasks.</li>
+<li><strong>Token</strong> — a chunk of text the model processes; billing unit for GenAI.</li>
+<li><strong>Embedding</strong> — a numeric vector that captures the <em>meaning</em> of text/data; enables semantic search &amp; RAG.</li>
+<li><strong>Vector database</strong> — stores embeddings for fast similarity search (powers RAG).</li>
+<li><strong>Prompt</strong> — your instruction/input. <strong>Prompt engineering</strong> — crafting prompts for better output.</li>
+<li><strong>Context window</strong> — how much text the model can consider at once.</li>
+<li><strong>Temperature / Top-p / Top-k</strong> — inference settings controlling randomness/creativity of output.</li>
+<li><strong>Grounding</strong> — anchoring a model's answers in real, retrieved, factual data (reduces hallucination).</li>
+<li><strong>Hallucination</strong> — confident but false or made-up output.</li>
+<li><strong>RAG (Retrieval-Augmented Generation)</strong> — fetch relevant data and feed it to the model for accurate answers.</li>
+<li><strong>Fine-tuning</strong> — further training an FM on your labeled data to change its behavior.</li>
+<li><strong>Zero-shot / one-shot / few-shot</strong> — giving the model zero, one, or a few examples in the prompt.</li>
+<li><strong>Chain-of-thought</strong> — prompting the model to show step-by-step reasoning.</li>
+<li><strong>Multimodal</strong> — handles multiple input types (text + image + audio).</li>
+<li><strong>Transformer</strong> — the neural-network architecture behind modern LLMs.</li>
+<li><strong>Diffusion model</strong> — generates images from noise (e.g., Stability AI). <strong>GAN</strong> — generative adversarial network.</li>
+<li><strong>Agent</strong> — an AI that reasons, plans, and takes actions using tools/APIs.</li>
+</ul>
+<h3>Responsible AI terms</h3>
+<ul>
+<li><strong>Fairness</strong> — treating all groups equitably, without bias.</li>
+<li><strong>Explainability / interpretability</strong> — being able to understand <em>why</em> a model made a decision.</li>
+<li><strong>Transparency</strong> — being open about how the AI works and its limitations.</li>
+<li><strong>Veracity</strong> — truthfulness/accuracy of output.</li>
+<li><strong>Robustness</strong> — performing reliably even with unexpected or adversarial input.</li>
+<li><strong>Toxicity</strong> — harmful, offensive, or inappropriate content.</li>
+<li><strong>Human-in-the-loop</strong> — humans review or approve AI decisions (<strong>A2I</strong>).</li>
+<li><strong>Accountability</strong> — clear ownership/responsibility for AI outcomes.</li>
+<li><strong>Controllability</strong> — ability to guide and constrain model behavior.</li>
+</ul>
+<h3>Business &amp; operational terms</h3>
+<ul>
+<li><strong>MLOps</strong> — practices to deploy, monitor, and maintain ML models in production.</li>
+<li><strong>ROI</strong> — return on investment (business value vs cost).</li>
+<li><strong>Latency</strong> — delay before a response. <strong>Throughput</strong> — volume processed per unit time.</li>
+<li><strong>Scalability</strong> — ability to handle growing load. <strong>Availability</strong> — uptime/reliability.</li>
+<li><strong>SLA</strong> — service-level agreement (promised performance/uptime).</li>
+<li><strong>POC</strong> — proof of concept (small test before full rollout).</li>
+<li><strong>Time to market</strong> — how fast you can launch (managed services = faster).</li>
+</ul>
+<h3>Performance metrics (quick recall)</h3>
+<ul>
+<li><strong>Accuracy</strong> — overall correct predictions. <strong>Precision</strong> — correct positives among predicted positives.</li>
+<li><strong>Recall</strong> — correct positives among actual positives. <strong>F1</strong> — balance of precision &amp; recall.</li>
+<li><strong>AUC-ROC</strong> — classifier quality across thresholds. <strong>Confusion matrix</strong> — table of TP/FP/TN/FN.</li>
+<li><strong>False positive</strong> — flagged wrongly. <strong>False negative</strong> — missed wrongly.</li>
+<li><strong>BLEU</strong> (translation) · <strong>ROUGE</strong> (summarization) · <strong>Perplexity</strong> — LLM quality metrics.</li>
+</ul>
+<hr />
+<h2>🎯 FINAL EXAM-DAY TIPS</h2>
+<ol>
+<li><strong>Read for the "best" answer.</strong> Multiple options are often <em>technically valid</em> — pick the one that <em>best fits cost, simplicity, or the exact need</em>. AWS usually rewards the <strong>managed / least-effort</strong> option.</li>
+<li><strong>AI service vs SageMaker vs Bedrock</strong> is the core decision. Pre-trained API → AI service. Custom model → SageMaker. GenAI/LLM → Bedrock.</li>
+<li><strong>RAG ≠ fine-tuning.</strong> "Use latest/private facts, reduce hallucination" = <strong>RAG</strong>. "Change behavior/style" = <strong>fine-tuning</strong>.</li>
+<li><strong>CloudTrail = audit, CloudWatch = performance.</strong> Don't swap them.</li>
+<li><strong>Clarify = bias/explainability, Model Monitor = drift, Guardrails = GenAI safety.</strong></li>
+<li><strong>Responsible AI dimensions</strong> (fairness, explainability, transparency, safety, veracity, privacy, governance) appear as scenario keywords — match them to tools.</li>
+<li>When a question says <strong>"no ML expertise"</strong> or <strong>"business users"</strong> → think <strong>Canvas, Q, or a pre-built AI service</strong>, not raw SageMaker.</li>
+<li><strong>Eliminate distractors:</strong> if a non-AI service appears (e.g., Lambda, EC2) where a purpose-built AI service exists, the AI service is usually correct.</li>
+<li><strong>Manage time:</strong> ~80 sec/question. Flag and move on; never get stuck.</li>
+<li><strong>Practice scenario questions</strong> (Tutorials Dojo / official AWS Skill Builder practice) — the exam style is scenario-based, and mock exams are the single biggest score-mover.</li>
+</ol>
+<hr />
+<h3>3-week study plan (suggested)</h3>
+<ul>
+<li><strong>Week 1:</strong> Domains 1–2 (concepts) + this cheat sheet daily. Watch AWS Skill Builder's free AIF-C01 course.</li>
+<li><strong>Week 2:</strong> Domain 3 (Bedrock deep dive: RAG, Agents, Guardrails) + SageMaker family. Hands-on in console if possible.</li>
+<li><strong>Week 3:</strong> Domains 4–5 (responsible AI + security) + <strong>timed mock exams</strong>. Review every wrong answer until you know <em>why</em>.</li>
+</ul>
+<blockquote>
+<p>Good luck, Yan — focus your energy on Domain 3 (Bedrock) and the service-mapping table; that's where the points are.</p>
+</blockquote></div>
+    <div class="noresults" id="noresults">// NO MATCHING RECORDS</div>
+  </main>
+</div>
+
+<div class="totop" title="Back to top">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</div>
+
+<footer class="foot">AIF-C01 NEURAL STUDY CONSOLE &nbsp;·&nbsp; <span>built for focused prep</span> &nbsp;·&nbsp; good luck</footer>
+
+<script>
+// ---------- neural network background ----------
+(function(){
+  const c=document.getElementById('net'), x=c.getContext('2d');
+  const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let w,h,pts,raf;
+  function size(){w=c.width=innerWidth; h=c.height=innerHeight;}
+  function init(){
+    size();
+    const n=Math.min(90,Math.floor(w*h/16000));
+    pts=Array.from({length:n},()=>({x:Math.random()*w,y:Math.random()*h,
+      vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35}));
+  }
+  function draw(){
+    x.clearRect(0,0,w,h);
+    for(let i=0;i<pts.length;i++){
+      const p=pts[i]; p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>w)p.vx*=-1; if(p.y<0||p.y>h)p.vy*=-1;
+      for(let j=i+1;j<pts.length;j++){
+        const q=pts[j], dx=p.x-q.x, dy=p.y-q.y, d=Math.hypot(dx,dy);
+        if(d<128){const a=(1-d/128)*.32; x.strokeStyle='rgba(0,229,255,'+a+')';
+          x.lineWidth=.7; x.beginPath(); x.moveTo(p.x,p.y); x.lineTo(q.x,q.y); x.stroke();}
+      }
+    }
+    for(const p of pts){x.fillStyle='rgba(94,240,255,.75)'; x.beginPath();
+      x.arc(p.x,p.y,1.5,0,7); x.fill();}
+    raf=requestAnimationFrame(draw);
+  }
+  init();
+  if(!reduce){draw();} else {draw(); cancelAnimationFrame(raf);
+    // single static frame for reduced motion
+    x.clearRect(0,0,w,h); for(const p of pts){x.fillStyle='rgba(94,240,255,.5)'; x.beginPath(); x.arc(p.x,p.y,1.4,0,7); x.fill();}}
+  addEventListener('resize',()=>{init(); if(reduce){x.clearRect(0,0,w,h);}});
+})();
+
+// ---------- progress bar ----------
+const prog=document.querySelector('.progress');
+addEventListener('scroll',()=>{
+  const s=document.documentElement.scrollHeight-innerHeight;
+  prog.style.width=(scrollY/s*100)+'%';
+  document.querySelector('.totop').classList.toggle('show',scrollY>600);
+},{passive:true});
+
+// ---------- group flat content into collapsible sections + build TOC ----------
+(function(){
+  const content=document.getElementById('content');
+  const nodes=Array.from(content.childNodes);
+  const sections=[]; let cur=null;
+  function slug(t){return t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);}
+  nodes.forEach(n=>{
+    if(n.nodeType===1 && n.tagName==='H2'){
+      cur={title:n.textContent.trim(), nodes:[]}; sections.push(cur);
+    } else if(cur){ cur.nodes.push(n); }
+  });
+  content.innerHTML='';
+  const toc=document.getElementById('toc');
+  sections.forEach((s,i)=>{
+    const id=slug(s.title)||('sec-'+i);
+    const ix=String(i+1).padStart(2,'0');
+    const sec=document.createElement('section'); sec.className='sec'; sec.id=id;
+    const head=document.createElement('div'); head.className='sec-head';
+    head.innerHTML='<span class="sec-ix">'+ix+'</span><h2>'+s.title+'</h2>'+
+      '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+    const bodyDiv=document.createElement('div'); bodyDiv.className='sec-body';
+    s.nodes.forEach(nd=>bodyDiv.appendChild(nd));
+    // wrap tables for horizontal scroll
+    bodyDiv.querySelectorAll('table').forEach(t=>{
+      const w=document.createElement('div'); w.className='tablewrap';
+      t.parentNode.insertBefore(w,t); w.appendChild(t);
+    });
+    head.addEventListener('click',()=>sec.classList.toggle('collapsed'));
+    sec.appendChild(head); sec.appendChild(bodyDiv); content.appendChild(sec);
+    const a=document.createElement('a'); a.href='#'+id;
+    a.innerHTML='<span class="ix">'+ix+'</span><span>'+s.title.replace(/^[^A-Za-z0-9]+/,'').trim()+'</span>';
+    a.addEventListener('click',()=>{ if(sec.classList.contains('collapsed')) sec.classList.remove('collapsed'); });
+    toc.appendChild(a);
+    s.el=sec; s.link=a;
+  });
+
+  // reveal on scroll
+  const rev=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.08});
+  document.querySelectorAll('.sec').forEach(s=>rev.observe(s));
+
+  // scrollspy
+  const spy=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){
+      document.querySelectorAll('.toc a').forEach(a=>a.classList.remove('active'));
+      const link=document.querySelector('.toc a[href="#'+e.target.id+'"]');
+      if(link)link.classList.add('active');
+    }});
+  },{rootMargin:'-20% 0px -70% 0px'});
+  document.querySelectorAll('.sec').forEach(s=>spy.observe(s));
+
+  // ---------- live search filter ----------
+  const input=document.getElementById('q');
+  const nores=document.getElementById('noresults');
+  function tidy(sec){
+    // hide table containers with no visible rows
+    sec.querySelectorAll('.tablewrap').forEach(tw=>{
+      const vis=[...tw.querySelectorAll('tbody tr')].some(r=>!r.classList.contains('hidden'));
+      tw.classList.toggle('hidden',!vis);
+    });
+    // hide a sub-heading whose following group (until next h3) has nothing visible
+    const bodyEl=sec.querySelector('.sec-body'); if(!bodyEl)return;
+    const kids=[...bodyEl.children];
+    kids.forEach((el,i)=>{
+      if(el.tagName==='H3'){
+        let vis=false;
+        for(let j=i+1;j<kids.length;j++){
+          const k=kids[j]; if(k.tagName==='H3')break;
+          if(!k.classList.contains('hidden'))vis=true;
+        }
+        el.classList.toggle('hidden',!vis);
+      }
+    });
+  }
+  function clearTidy(sec){
+    sec.querySelectorAll('.tablewrap,h3').forEach(el=>el.classList.remove('hidden'));
+  }
+  input.addEventListener('input',()=>{
+    const q=input.value.trim().toLowerCase();
+    let anyVisible=false;
+    sections.forEach(s=>{
+      const sec=s.el;
+      if(!q){ sec.classList.remove('hidden'); sec.classList.remove('collapsed');
+        sec.querySelectorAll('tr,li,p').forEach(el=>el.classList.remove('hidden'));
+        clearTidy(sec); s.link.classList.remove('hidden'); anyVisible=true; return; }
+      let hit=false;
+      const rows=sec.querySelectorAll('tbody tr, li, .sec-body > p');
+      const titleHit=s.title.toLowerCase().includes(q);
+      rows.forEach(el=>{
+        const m=titleHit || el.textContent.toLowerCase().includes(q);
+        el.classList.toggle('hidden',!m); if(m)hit=true;
+      });
+      if(titleHit)hit=true;
+      sec.classList.toggle('hidden',!hit);
+      sec.classList.remove('collapsed');
+      if(hit){ if(titleHit) clearTidy(sec); else tidy(sec); }
+      s.link.classList.toggle('hidden',!hit);
+      if(hit)anyVisible=true;
+    });
+    nores.classList.toggle('show',!anyVisible);
+  });
+})();
+
+// back to top
+document.querySelector('.totop').addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
+</script>
+</body>
+</html>
